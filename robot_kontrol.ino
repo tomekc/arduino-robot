@@ -11,6 +11,13 @@
 // Krańcówki
 #define LIMIT_AXIS1_BACK A0
 
+// Odstęp czasowy w mikrosekundach kroków. Mniejsza wartość przyspiesza silniki, dobrać eksperymentalnie.
+#define STEP_DELAY 2000
+
+// jaką wartość zwraca krańcówka gdy jest uderzona
+// NC oznacza stan wysoki po wciśnięciu
+#define LIMITER_HIT true
+
 class Button {
 public:
     Button(int pin);
@@ -81,10 +88,10 @@ void Stepper::Step(int delay) {
     if (this->LimiterEnabled()) {
         bool backLimiter = digitalRead(this->backLimitSwitchPin);
         bool forwardLimiter = digitalRead(this->forwardLimitSwitchPin);
-        if (this->direction == DIR_BACKWARD && backLimiter == false) {
+        if (this->direction == DIR_BACKWARD && backLimiter == LIMITER_HIT) {
             return;
         }
-        if (this->direction == DIR_FORWARD && forwardLimiter == false) {
+        if (this->direction == DIR_FORWARD && forwardLimiter == LIMITER_HIT) {
             return;
         }
     }
@@ -94,6 +101,30 @@ void Stepper::Step(int delay) {
     delayMicroseconds(delay);
 }
 
+class Controller {
+public:
+    Controller(Stepper *stepper, Button *forwardButton, Button *backButton) : stepper(stepper),
+                                                                              forwardButton(forwardButton),
+                                                                              backButton(backButton) {}
+
+    void Process() {
+        // albo jeden albo drugi
+        if (backButton->Pressed() != forwardButton->Pressed()) {
+            if (backButton->Pressed()) {
+                stepper->SetDirection(DIR_BACKWARD);
+            }
+            if (forwardButton->Pressed()) {
+                stepper->SetDirection(DIR_FORWARD);
+            }
+            stepper->Step(STEP_DELAY);
+        }
+    }
+private:
+    Stepper *stepper;
+    Button *forwardButton;
+    Button *backButton;
+};
+
 
 // Tutaj deklarujemy obiekty przycisków, podając w argumencie konstruktora pin do którego jest podłączony
 Button axis1aButton = Button(BTN_AXIS1_FWD);
@@ -102,8 +133,7 @@ Button axis1bButton = Button(BTN_AXIS1_REV);
 // Tutaj definiujemy silnik krokowy, podajemy piny kierunku i kroku
 Stepper axis1Stepper = Stepper(STEP_AXIS1_DIR, STEP_AXIS1_STEP);
 
-// Odstęp czasowy w mikrosekundach kroków. Mniejsza wartość przyspiesza silniki, dobrać eksperymentalnie.
-#define STEP_DELAY 2000
+Controller axis1 = Controller(&axis1Stepper, &axis1aButton, &axis1bButton);
 
 void setup() {
     // dla uproszczenia obie krańcówki są na jednym pinie
@@ -111,19 +141,7 @@ void setup() {
 }
 
 void loop() {
-    // put your main code here, to run repeatedly:
 
-
-    if (axis1aButton.Pressed() || axis1bButton.Pressed()) {
-        if (axis1aButton.Pressed()) {
-            axis1Stepper.SetDirection(DIR_FORWARD);
-        }
-        if (axis1bButton.Pressed()) {
-            axis1Stepper.SetDirection(DIR_BACKWARD);
-        }
-
-        axis1Stepper.Step(STEP_DELAY);
-    }
-
-
+    axis1.Process();
+    delay(10);
 }
