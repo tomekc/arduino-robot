@@ -1,11 +1,5 @@
 #include <Arduino.h>
 
-// Definicja pinów przycisków
-
-// Piny silnika krokowego
-
-// Krańcówki
-
 // Odstęp czasowy w mikrosekundach kroków. Mniejsza wartość przyspiesza silniki, dobrać eksperymentalnie.
 #define STEP_DELAY 2000
 
@@ -123,22 +117,45 @@ private:
 
 // Tutaj deklarujemy obiekty przycisków, podając w argumencie konstruktora pin do którego jest podłączony
 // W nawiasach symbol pinu do którego jest podpięty przycisk, który po wciśnięciu zwiera do masy
-Button axis1ButtonLeft = Button(A9);
-Button axis1ButtonRight = Button(A8);
+Button axis1ButtonLeft = Button(A0);
+Button axis1ButtonRight = Button(A1);
+
+Button axis2ButtonLeft = Button(A2);
+Button axis2ButtonRight = Button(A3);
+
+Button axis3ButtonLeft = Button(A4);
+Button axis3ButtonRight = Button(A5);
+
+Button axis4ButtonLeft = Button(A6);
+Button axis4ButtonRight = Button(A7);
+
 
 // Tutaj definiujemy silnik krokowe
 // W nawiasach podajemy numery pinów (dir, step)
-Stepper axis1Stepper = Stepper(2, 3);
+Stepper axis1Stepper = Stepper(0, 1);
+Stepper axis2Stepper = Stepper(2, 3);
+Stepper axis3Stepper = Stepper(3, 4);
+Stepper axis4Stepper = Stepper(5, 6);
 
 Controller axis1 = Controller(&axis1Stepper, &axis1ButtonLeft, &axis1ButtonRight);
+Controller axis2 = Controller(&axis2Stepper, &axis2ButtonLeft, &axis2ButtonRight);
+Controller axis3 = Controller(&axis3Stepper, &axis3ButtonLeft, &axis3ButtonRight);
+Controller axis4 = Controller(&axis4Stepper, &axis4ButtonLeft, &axis4ButtonRight);
 
 void setup() {
-
-    axis1Stepper.SetLimitPins(A0, A0);
+    // Krańcówki:
+    // każda linijka to oś (axis1, axis2,...)
+    // Dwa symbole w nawiasach to piny jednej i drugiej krańcówki
+    axis1Stepper.SetLimitPins(A8, A9);
+    axis2Stepper.SetLimitPins(A10, A11);
+    axis3Stepper.SetLimitPins(A12, A13);
+    axis4Stepper.SetLimitPins(A14, A15);
 }
 
 void loop() {
-
     axis1.Process();
+    axis2.Process();
+    axis3.Process();
+    axis4.Process();
     delay(10);
 }
