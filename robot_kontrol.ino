@@ -1,15 +1,10 @@
 #include <Arduino.h>
 
 // Definicja pinów przycisków
-#define BTN_AXIS1_FWD A9
-#define BTN_AXIS1_REV A8
 
 // Piny silnika krokowego
-#define STEP_AXIS1_DIR 2
-#define STEP_AXIS1_STEP 3
 
 // Krańcówki
-#define LIMIT_AXIS1_BACK A0
 
 // Odstęp czasowy w mikrosekundach kroków. Mniejsza wartość przyspiesza silniki, dobrać eksperymentalnie.
 #define STEP_DELAY 2000
@@ -127,17 +122,19 @@ private:
 
 
 // Tutaj deklarujemy obiekty przycisków, podając w argumencie konstruktora pin do którego jest podłączony
-Button axis1aButton = Button(BTN_AXIS1_FWD);
-Button axis1bButton = Button(BTN_AXIS1_REV);
+// W nawiasach symbol pinu do którego jest podpięty przycisk, który po wciśnięciu zwiera do masy
+Button axis1ButtonLeft = Button(A9);
+Button axis1ButtonRight = Button(A8);
 
-// Tutaj definiujemy silnik krokowy, podajemy piny kierunku i kroku
-Stepper axis1Stepper = Stepper(STEP_AXIS1_DIR, STEP_AXIS1_STEP);
+// Tutaj definiujemy silnik krokowe
+// W nawiasach podajemy numery pinów (dir, step)
+Stepper axis1Stepper = Stepper(2, 3);
 
-Controller axis1 = Controller(&axis1Stepper, &axis1aButton, &axis1bButton);
+Controller axis1 = Controller(&axis1Stepper, &axis1ButtonLeft, &axis1ButtonRight);
 
 void setup() {
-    // dla uproszczenia obie krańcówki są na jednym pinie
-    axis1Stepper.SetLimitPins(LIMIT_AXIS1_BACK, LIMIT_AXIS1_BACK);
+
+    axis1Stepper.SetLimitPins(A0, A0);
 }
 
 void loop() {
